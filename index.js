@@ -141,4 +141,50 @@ program
     }
   });
 
+// Decode base64 to image
+program
+  .command('decode')
+  .description('Decode base64 from a file and save as an image')
+  .argument('<input>', 'Input file containing base64 data')
+  .argument('<output>', 'Output image path')
+  .action(async (input, output) => {
+    try {
+      if (!fs.existsSync(input)) {
+        console.error(`Error: Input file '${input}' not found`);
+        process.exit(1);
+      }
+
+      // Read the base64 data from file
+      let base64Data = fs.readFileSync(input, 'utf8').trim();
+      
+      // Remove data URI prefix if present (e.g., "data:image/jpeg;base64,")
+      const dataUriMatch = base64Data.match(/^data:image\/[a-z]+;base64,(.+)$/);
+      if (dataUriMatch) {
+        base64Data = dataUriMatch[1];
+      }
+
+      // Convert base64 to buffer
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      // Determine output format from extension
+      const outputExt = path.extname(output).toLowerCase();
+      let format = 'jpeg';
+      if (outputExt === '.png') format = 'png';
+      else if (outputExt === '.webp') format = 'webp';
+      else if (outputExt === '.gif') format = 'gif';
+      else if (outputExt === '.jpg') format = 'jpeg';
+
+      // Use sharp to process and save the image
+      await sharp(imageBuffer).toFile(output);
+
+      const outputStats = fs.statSync(output);
+      console.log(`Image decoded successfully!`);
+      console.log(`Size: ${(outputStats.size / 1024).toFixed(2)} KB`);
+      console.log(`Saved to: ${output}`);
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
 program.parse();

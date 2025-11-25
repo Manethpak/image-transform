@@ -6,6 +6,7 @@ A simple and fast CLI tool for compressing images and converting them to base64.
 
 - Compress images with configurable quality
 - Convert images to base64 (with or without data URI)
+- Decode base64 from files back to images
 - Resize images while compressing
 - Support for multiple formats: JPEG, PNG, WebP
 - Show compression statistics
@@ -107,6 +108,25 @@ Get raw base64 (without data URI):
 imgt base64 input.jpg --raw
 ```
 
+### Decode Base64 to Image
+
+Decode base64 data from a file and save as an image:
+
+```bash
+imgt decode base64.txt output.jpg
+```
+
+The decode command automatically detects and handles:
+- Raw base64 strings
+- Data URI format (e.g., `data:image/jpeg;base64,...`)
+
+Output format is determined by the file extension:
+
+```bash
+imgt decode base64.txt output.png
+imgt decode base64.txt output.webp
+```
+
 ## Examples
 
 ### Compress a photo for web use
@@ -131,6 +151,16 @@ imgt base64 logo.png > logo-base64.txt
 
 ```bash
 for img in *.jpg; do imgt compress "$img" "compressed_$img" -q 80; done
+```
+
+### Convert to base64 and back
+
+```bash
+# Convert image to base64
+imgt base64 photo.jpg photo-base64.txt
+
+# Decode it back to an image
+imgt decode photo-base64.txt restored-photo.jpg
 ```
 
 ## Options
@@ -163,6 +193,19 @@ Arguments:
 
 Options:
   --raw       Output raw base64 without data URI prefix
+```
+
+### Decode Command
+
+```
+Usage: imgt decode <input> <output>
+
+Arguments:
+  input       Input file containing base64 data
+  output      Output image path
+
+The command automatically handles both raw base64 and data URI formats.
+Output format is determined by the file extension (.jpg, .png, .webp, etc.)
 ```
 
 ## Requirements
