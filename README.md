@@ -230,7 +230,7 @@ Output format is determined by the file extension (.jpg, .png, .webp, etc.)
 Usage: imgt serve [options]
 
 Options:
-  -p, --port <number>   Port to serve on (default: "3000")
+  -p, --port <number>   Port to serve on (default: "3020")
 ```
 
 ## Requirements
