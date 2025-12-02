@@ -2,6 +2,7 @@
   "name": "imgt",
   "version": "1.0.0",
   "description": "A simple CLI tool for compressing images and converting them to base64",
+  "homepage": "https://github.com/manethpak/image-transform",
   "main": "index.js",
   "bin": {
     "imgt": "./index.js"
@@ -16,7 +17,7 @@
     "cli",
     "transform"
   ],
-  "author": "",
+  "author": "Maneth Pak <manethpak@gmail.com>",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
