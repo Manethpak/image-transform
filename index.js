@@ -156,7 +156,7 @@ program
 
       // Read the base64 data from file
       let base64Data = fs.readFileSync(input, 'utf8').trim();
-      
+
       // Remove data URI prefix if present (e.g., "data:image/jpeg;base64,")
       const dataUriMatch = base64Data.match(/^data:image\/[a-z]+;base64,(.+)$/);
       if (dataUriMatch) {
@@ -185,6 +185,38 @@ program
       console.error(`Error: ${error.message}`);
       process.exit(1);
     }
+  });
+
+// Serve web page
+program
+  .command('serve')
+  .description('Serve the web page for encoding/decoding images. Default to port 3020.')
+  .option('-p, --port <number>', 'Port to serve on', '3020')
+  .action((options) => {
+    const http = require('http');
+    const port = parseInt(options.port || 3020);
+
+    const server = http.createServer((req, res) => {
+      if (req.url === '/' || req.url === '/index.html') {
+        const filePath = path.join(__dirname, 'index.html');
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            res.writeHead(404);
+            res.end('File not found');
+            return;
+          }
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.end(data);
+        });
+      } else {
+        res.writeHead(404);
+        res.end('Not found');
+      }
+    });
+
+    server.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
   });
 
 program.parse();

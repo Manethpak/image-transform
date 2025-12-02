@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Encoder / Decoder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        },
+                        dark: {
+                            800: '#1e1e2e',
+                            900: '#11111b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="text-slate-200 font-sans antialiased selection:bg-brand-500 selection:text-white pb-20">
+
+    <!-- Header -->
+    <header class="py-8 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-2">
+            Image Transform
+        </h1>
+        <p class="text-slate-400 text-lg">Seamlessly encode and decode images locally</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Encoder Section -->
+        <section class="glass-panel rounded-2xl p-6 shadow-xl flex flex-col h-full transition-all duration-300 hover:shadow-brand-500/10 hover:border-brand-500/30">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Encode Image
+                </h2>
+                <span class="text-xs font-medium px-2.5 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">Image to Base64</span>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4">
+                <!-- Drop Zone -->
+                <div id="dropZone" class="relative border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-brand-500 hover:bg-slate-800/50 transition-all cursor-pointer group">
+                    <input type="file" id="encodeFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="space-y-2 pointer-events-none">
+                        <div class="mx-auto h-12 w-12 text-slate-400 group-hover:text-brand-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                        </div>
+                        <p class="text-slate-300 font-medium">Click or drag image here</p>
+                        <p class="text-slate-500 text-sm">Supports JPG, PNG, WEBP, GIF</p>
+                    </div>
+                </div>
+
+                <!-- Preview & Action -->
+                <div id="encodePreviewContainer" class="hidden space-y-4 animate-fade-in">
+                    <div class="relative rounded-lg overflow-hidden bg-slate-900/50 border border-slate-700/50 flex justify-center p-4">
+                        <img id="encodePreview" class="max-h-48 object-contain rounded shadow-lg" alt="Preview">
+                        <button onclick="clearEncode()" class="absolute top-2 right-2 p-1.5 bg-slate-800/80 hover:bg-red-500/80 text-white rounded-full transition-colors backdrop-blur-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button onclick="processEncode()" class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-500/20 transition-all transform active:scale-[0.98]">
+                        Generate Base64
+                    </button>
+                </div>
+
+                <!-- Output -->
+                <div class="relative mt-auto">
+                    <textarea id="encodedOutput" readonly placeholder="Base64 string will appear here..." 
+                        class="w-full h-32 bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-xs font-mono text-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none resize-none custom-scrollbar transition-all"></textarea>
+                    <button onclick="copyEncoded()" id="copyBtn" class="absolute top-2 right-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white rounded-lg border border-slate-600 transition-colors flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Decoder Section -->
+        <section class="glass-panel rounded-2xl p-6 shadow-xl flex flex-col h-full transition-all duration-300 hover:shadow-purple-500/10 hover:border-purple-500/30">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-semibold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    Decode Base64
+                </h2>
+                <span class="text-xs font-medium px-2.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Base64 to Image</span>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-4">
+                <div class="relative">
+                    <textarea id="decodeInput" placeholder="Paste your Base64 string here..." 
+                        class="w-full h-32 bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-xs font-mono text-slate-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none custom-scrollbar transition-all"></textarea>
+                    <div class="absolute bottom-2 right-2 flex gap-2">
+                         <button onclick="pasteToDecode()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white rounded-lg border border-slate-600 transition-colors">
+                            Paste
+                        </button>
+                        <button onclick="document.getElementById('decodeInput').value = ''" class="px-3 py-1.5 bg-slate-800 hover:bg-red-900/50 text-xs font-medium text-white rounded-lg border border-slate-600 transition-colors">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="decodeImage()" class="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/20 transition-all transform active:scale-[0.98]">
+                    Decode to Image
+                </button>
+
+                <!-- Decode Result -->
+                <div id="decodeResult" class="hidden mt-auto space-y-4 animate-fade-in">
+                    <div class="p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl flex flex-col items-center gap-4">
+                        <img id="decodedImage" class="max-h-64 object-contain rounded shadow-lg" alt="Decoded Image">
+                        <div class="flex gap-3 w-full">
+                            <a id="downloadLink" download="decoded_image.png" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-white text-center text-sm font-medium rounded-lg border border-slate-600 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- History Gallery -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12">
+        <div class="glass-panel rounded-2xl p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Session History
+                </h3>
+                <button onclick="clearHistory()" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors">
+                    Clear History
+                </button>
+            </div>
+            
+            <div id="historyGallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- History items will be injected here -->
+                <div id="emptyHistory" class="col-span-full py-12 text-center text-slate-500">
+                    <p>No history yet. Encode or decode an image to see it here.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // State
+        let sessionHistory = [];
+
+        // DOM Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('encodeFile');
+        const encodePreview = document.getElementById('encodePreview');
+        const encodePreviewContainer = document.getElementById('encodePreviewContainer');
+        const encodedOutput = document.getElementById('encodedOutput');
+        
+        // Drag & Drop Logic
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-brand-500', 'bg-slate-800/50');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-brand-500', 'bg-slate-800/50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-brand-500', 'bg-slate-800/50');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length) {
+                handleFileSelect(fileInput.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                encodePreview.src = e.target.result;
+                encodePreviewContainer.classList.remove('hidden');
+                // Auto process
+                processEncode();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearEncode() {
+            fileInput.value = '';
+            encodePreview.src = '';
+            encodePreviewContainer.classList.add('hidden');
+            encodedOutput.value = '';
+        }
+
+        function processEncode() {
+            const src = encodePreview.src;
+            if (!src) return;
+            encodedOutput.value = src;
+            addToHistory(src, 'Encoded');
+        }
+
+        function copyEncoded() {
+            const text = encodedOutput.value;
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Copied!`;
+                btn.classList.add('bg-green-600', 'border-green-500', 'text-white');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-600', 'border-green-500', 'text-white');
+                }, 2000);
+            });
+        }
+
+        // Decode Logic
+        async function pasteToDecode() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('decodeInput').value = text;
+                decodeImage();
+            } catch (err) {
+                alert('Failed to read clipboard contents: ' + err);
+            }
+        }
+
+        function decodeImage() {
+            const input = document.getElementById('decodeInput').value.trim();
+            const img = document.getElementById('decodedImage');
+            const link = document.getElementById('downloadLink');
+            const resultDiv = document.getElementById('decodeResult');
+
+            if (!input) {
+                alert('Please enter base64 data.');
+                return;
+            }
+
+            let src = input;
+            if (!input.startsWith('data:')) {
+                // Try to guess mime type or default to png
+                src = 'data:image/png;base64,' + input;
+            }
+
+            img.src = src;
+            link.href = src;
+            resultDiv.classList.remove('hidden');
+            
+            // Add to history after successful load
+            img.onload = () => {
+                addToHistory(src, 'Decoded');
+            };
+            img.onerror = () => {
+                alert('Invalid Base64 image data.');
+                resultDiv.classList.add('hidden');
+            };
+        }
+
+        // History Logic
+        function addToHistory(dataUri, type) {
+            // Avoid duplicates at the top
+            if (sessionHistory.length > 0 && sessionHistory[0].data === dataUri) return;
+
+            const item = {
+                id: Date.now(),
+                data: dataUri,
+                type: type,
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            sessionHistory.unshift(item);
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const gallery = document.getElementById('historyGallery');
+            gallery.innerHTML = '';
+
+            if (sessionHistory.length === 0) {
+                gallery.innerHTML = `
+                    <div id="emptyHistory" class="col-span-full py-12 text-center text-slate-500">
+                        <p>No history yet. Encode or decode an image to see it here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sessionHistory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'group relative aspect-square bg-slate-800 rounded-xl overflow-hidden border border-slate-700 hover:border-brand-500 transition-all cursor-pointer';
+                div.onclick = () => loadFromHistory(item);
+                
+                div.innerHTML = `
+                    <img src="${item.data}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <span class="text-xs font-bold text-white">${item.type}</span>
+                        <span class="text-[10px] text-slate-300">${item.timestamp}</span>
+                    </div>
+                `;
+                gallery.appendChild(div);
+            });
+        }
+
+        function loadFromHistory(item) {
+            // Load into both viewer areas for convenience? 
+            // Or just the relevant one? Let's do relevant one.
+            if (item.type === 'Encoded') {
+                // It was encoded, so show in encoder
+                encodePreview.src = item.data;
+                encodePreviewContainer.classList.remove('hidden');
+                encodedOutput.value = item.data;
+                // Scroll to encoder
+                document.querySelector('section:first-of-type').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                // Show in decoder
+                document.getElementById('decodeInput').value = item.data;
+                decodeImage();
+                // Scroll to decoder
+                document.querySelector('section:last-of-type').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function clearHistory() {
+            if(confirm('Clear session history?')) {
+                sessionHistory = [];
+                renderHistory();
+            }
+        }
+    </script>
+</body>
+</html>
