@@ -117,6 +117,7 @@ imgt decode base64.txt output.jpg
 ```
 
 The decode command automatically detects and handles:
+
 - Raw base64 strings
 - Data URI format (e.g., `data:image/jpeg;base64,...`)
 
@@ -125,6 +126,21 @@ Output format is determined by the file extension:
 ```bash
 imgt decode base64.txt output.png
 imgt decode base64.txt output.webp
+```
+
+### Serve Web Page
+
+Start a web server to serve the encode/decode page:
+
+```bash
+imgt serve
+# Starts server on port 3020
+```
+
+Specify a custom port:
+
+```bash
+imgt serve -p 8080
 ```
 
 ## Examples
@@ -206,6 +222,15 @@ Arguments:
 
 The command automatically handles both raw base64 and data URI formats.
 Output format is determined by the file extension (.jpg, .png, .webp, etc.)
+```
+
+### Serve Command
+
+```
+Usage: imgt serve [options]
+
+Options:
+  -p, --port <number>   Port to serve on (default: "3000")
 ```
 
 ## Requirements
