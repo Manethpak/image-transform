@@ -30,14 +30,10 @@ export default function ImagePreview({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-muted/30">
         <div className="flex items-center gap-2">
           <div className="h-8 w-1 bg-primary rounded-full" />
-          <CardTitle className="text-xl font-bold">Preview & Download</CardTitle>
+          <CardTitle className="text-xl font-bold">
+            Preview & Download
+          </CardTitle>
         </div>
-        {processed && (
-          <Button onClick={handleDownload} size="sm" className="gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
-            <Download className="w-4 h-4" />
-            Download Result
-          </Button>
-        )}
       </CardHeader>
 
       <CardContent className="space-y-8 p-6">
@@ -82,11 +78,21 @@ export default function ImagePreview({
                   </span>
                   {processed.size < original.size && (
                     <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2.5 py-1 rounded-md font-bold border border-green-200 dark:border-green-900">
-                      -{Math.round(
+                      -
+                      {Math.round(
                         ((original.size - processed.size) / original.size) * 100
-                      )}%
+                      )}
+                      %
                     </span>
                   )}
+                  <Button
+                    onClick={handleDownload}
+                    size="sm"
+                    className="ml-2 gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Result
+                  </Button>
                 </div>
               )}
             </div>
@@ -113,7 +119,8 @@ export default function ImagePreview({
                   />
                   <div className="absolute bottom-2 left-2 right-2 bg-black/70 p-2 rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                     <p className="text-xs text-white font-medium text-center">
-                      {processed.width} × {processed.height} pixels • {processed.format.split('/')[1].toUpperCase()}
+                      {processed.width} × {processed.height} pixels •{" "}
+                      {processed.format.split("/")[1].toUpperCase()}
                     </p>
                   </div>
                 </>
@@ -122,7 +129,9 @@ export default function ImagePreview({
                   <div className="p-4 rounded-full bg-muted/50">
                     <ArrowRight className="w-6 h-6" />
                   </div>
-                  <p className="text-sm font-medium">Configure settings to see preview</p>
+                  <p className="text-sm font-medium">
+                    Configure settings to see preview
+                  </p>
                 </div>
               )}
             </div>
@@ -133,7 +142,9 @@ export default function ImagePreview({
         {processed && (
           <div className="grid grid-cols-3 gap-4 pt-4">
             <div className="bg-muted/30 rounded-xl p-4 text-center border hover:bg-muted/50 transition-colors">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Dimensions</p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">
+                Dimensions
+              </p>
               <div className="text-sm font-bold flex items-center justify-center gap-2">
                 <span>
                   {original.width}×{original.height}
@@ -145,21 +156,33 @@ export default function ImagePreview({
               </div>
             </div>
             <div className="bg-muted/30 rounded-xl p-4 text-center border hover:bg-muted/50 transition-colors">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">File Size</p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">
+                File Size
+              </p>
               <div className="text-sm font-bold flex items-center justify-center gap-2">
                 <span>{formatFileSize(original.size)}</span>
                 <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                <span className={processed.size < original.size ? "text-green-600 dark:text-green-400" : ""}>
+                <span
+                  className={
+                    processed.size < original.size
+                      ? "text-green-600 dark:text-green-400"
+                      : ""
+                  }
+                >
                   {formatFileSize(processed.size)}
                 </span>
               </div>
             </div>
             <div className="bg-muted/30 rounded-xl p-4 text-center border hover:bg-muted/50 transition-colors">
-              <p className="text-xs text-muted-foreground mb-1 font-medium">Format</p>
+              <p className="text-xs text-muted-foreground mb-1 font-medium">
+                Format
+              </p>
               <div className="text-sm font-bold flex items-center justify-center gap-2 uppercase">
                 <span>{original.format.split("/")[1]}</span>
                 <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                <span className="text-primary">{processed.format.split("/")[1]}</span>
+                <span className="text-primary">
+                  {processed.format.split("/")[1]}
+                </span>
               </div>
             </div>
           </div>

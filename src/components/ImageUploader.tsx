@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import type { ImageData } from "../types/types";
 import { loadImage } from "../utils/imageUtils";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,23 @@ export default function ImageUploader({
     [handleFile]
   );
 
+  const handlePaste = useCallback(
+    (e: ClipboardEvent) => {
+      if (e.clipboardData && e.clipboardData.files.length > 0) {
+        const file = e.clipboardData.files[0];
+        handleFile(file);
+      }
+    },
+    [handleFile]
+  );
+
+  useEffect(() => {
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [handlePaste]);
+
   const handleClear = useCallback(() => {
     onImageLoad(null);
     setError(null);
@@ -101,22 +118,26 @@ export default function ImageUploader({
           onClick={() => document.getElementById("file-input")?.click()}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
+
           <CardContent className="flex flex-col items-center justify-center py-16 px-4 text-center relative z-10">
-            <div className={cn(
-              "p-6 rounded-full bg-muted mb-6 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary/10",
-              isDragging && "bg-primary/20 scale-110"
-            )}>
-              <Upload className={cn(
-                "w-10 h-10 text-muted-foreground transition-colors duration-500 group-hover:text-primary",
-                isDragging && "text-primary"
-              )} />
+            <div
+              className={cn(
+                "p-6 rounded-full bg-muted mb-6 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary/10",
+                isDragging && "bg-primary/20 scale-110"
+              )}
+            >
+              <Upload
+                className={cn(
+                  "w-10 h-10 text-muted-foreground transition-colors duration-500 group-hover:text-primary",
+                  isDragging && "text-primary"
+                )}
+              />
             </div>
             <h3 className="text-2xl font-bold mb-3 tracking-tight">
               {isDragging ? "Drop your image here" : "Upload an image"}
             </h3>
-            <p className="text-muted-foreground mb-8 max-w-xs mx-auto text-base">
-              Drag and drop your image here, or click to browse files
+            <p className="text-muted-foreground mb-8 max-w-md mx-auto text-base">
+              Drag and drop, paste from clipboard, or click to browse files
             </p>
             <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground/70 font-medium uppercase tracking-wider">
               <span className="bg-muted/50 px-2 py-1 rounded-md">JPG</span>
@@ -137,7 +158,7 @@ export default function ImageUploader({
         <Card className="overflow-hidden border shadow-sm bg-card">
           <CardContent className="p-0">
             <div className="p-8 flex items-center justify-center bg-muted/30 min-h-[200px] relative">
-               <div className="absolute top-3 right-3 z-10">
+              <div className="absolute top-3 right-3 z-10">
                 <Button
                   variant="destructive"
                   size="icon"
@@ -163,11 +184,17 @@ export default function ImageUploader({
                     {currentImage.file.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {currentImage.width} × {currentImage.height} • {(currentImage.size / 1024).toFixed(1)} KB
+                    {currentImage.width} × {currentImage.height} •{" "}
+                    {(currentImage.size / 1024).toFixed(1)} KB
                   </span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={handleClear} className="text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClear}
+                className="text-xs"
+              >
                 Change Image
               </Button>
             </div>
